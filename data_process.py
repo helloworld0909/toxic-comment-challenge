@@ -30,8 +30,9 @@ def tokenize(text):
     return tokens
 
 
-def load_train_data_with_dictionary(file_path):
+def load_train_data_with_dictionary(file_path, freq_threshold=0):
     dictionary = {"PADDING_TOKEN": 0, "UNKNOWN_TOKEN": 1}
+    word_freq = collections.defaultdict(int)
 
     train_df, valid_df = data_loader.load_train_data(file_path)
     train_doc, valid_doc = [], []
@@ -40,8 +41,11 @@ def load_train_data_with_dictionary(file_path):
 
         train_doc.append(doc)
         for token in doc.words:
-            if token not in dictionary:
-                dictionary[token] = len(dictionary)
+            word_freq[token] += 1
+
+    for word, freq in word_freq.items():
+        if freq >= freq_threshold:
+            dictionary[word] = len(dictionary)
 
     for idx, row in valid_df.iterrows():
         doc = process_row(row)
@@ -50,8 +54,8 @@ def load_train_data_with_dictionary(file_path):
     return train_doc, valid_doc, dictionary
 
 
-def load_raw_train_data(file_path):
-    train_doc, valid_doc, dictionary = load_train_data_with_dictionary(file_path)
+def load_raw_train_data(file_path, freq_threshold=0):
+    train_doc, valid_doc, dictionary = load_train_data_with_dictionary(file_path, freq_threshold)
 
     x_tr, y_tr = [], []
     for doc in train_doc:
@@ -66,8 +70,8 @@ def load_raw_train_data(file_path):
     return x_tr, y_tr, x_va, y_va, dictionary
 
 
-def load_processed_train_data(file_path):
-    train_doc, valid_doc, dictionary = load_train_data_with_dictionary(file_path)
+def load_processed_train_data(file_path, freq_threshold=0):
+    train_doc, valid_doc, dictionary = load_train_data_with_dictionary(file_path, freq_threshold)
 
     x_tr, y_tr = [], []
     for doc in train_doc:
