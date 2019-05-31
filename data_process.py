@@ -27,8 +27,6 @@ def tokenize(text):
     tokens = []
     for sent in nltk.sent_tokenize(text.strip()):
         for word in nltk.word_tokenize(sent):
-            if word in PUNCTUATIONS or word in STOPWORDS:
-                continue
             tokens.append(word.lower())
     return tokens
 
