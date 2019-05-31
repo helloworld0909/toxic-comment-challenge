@@ -61,3 +61,14 @@ def create_or_load_data(freq_threshold=0):
     Y_va = np.asarray(Y_va, dtype="int32")
 
     return X_tr, Y_tr, X_va, Y_va, dictionary, X_te, id_list
+
+
+def load_word_embedding(filepath, dim=100):
+    word2vector = {'PADDING_TOKEN': np.zeros(dim), 'UNKNOWN_TOKEN': np.random.uniform(-0.25, 0.25, dim)}
+    with open(filepath, 'r', encoding='utf-8') as embeddingFile:
+        for line in embeddingFile:
+            data_tuple = line.rstrip('\n').split(' ')
+            token = data_tuple[0]
+            vector = data_tuple[1:]
+            word2vector[token] = vector
+    return word2vector
