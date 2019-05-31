@@ -7,8 +7,7 @@ from gensim.models.ldamodel import LdaModel
 from sklearn.linear_model.logistic import LogisticRegression
 
 MODEL_PATH = "./save/lda{}.model"
-TRAIN_DATA_PATH = "./save/processed_train.pkl"
-TEST_DATA_PATH = "./save/processed_test.pkl"
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -38,13 +37,13 @@ def lda_topic_vectors(model: LdaModel, corpus):
 
 if __name__ == '__main__':
     try:
-        with open(TRAIN_DATA_PATH, 'rb') as file:
+        with open(data_process.TRAIN_DATA_PATH, 'rb') as file:
             X_tr, Y_tr, X_va, Y_va, dictionary = pickle.load(file)
     except Exception as e:
         logging.warning(e)
         X_tr, Y_tr, X_va, Y_va, dictionary = data_process.load_processed_train_data("./resources/train.csv",
                                                                                     freq_threshold=10)
-        with open(TRAIN_DATA_PATH, 'wb') as file:
+        with open(data_process.TRAIN_DATA_PATH, 'wb') as file:
             pickle.dump((X_tr, Y_tr, X_va, Y_va, dictionary), file, pickle.HIGHEST_PROTOCOL)
         logging.info("Data processed")
 
@@ -52,12 +51,12 @@ if __name__ == '__main__':
     logging.info("Dictionary size: {}".format(len(dictionary)))
 
     try:
-        with open(TEST_DATA_PATH, 'rb') as file:
+        with open(data_process.TEST_DATA_PATH, 'rb') as file:
             X_te, id_list = pickle.load(file)
     except Exception as e:
         logging.warning(e)
         X_te, id_list = data_process.load_processed_test_data_feature_only("./resources/test.csv", dictionary)
-        with open(TEST_DATA_PATH, 'wb') as file:
+        with open(data_process.TEST_DATA_PATH, 'wb') as file:
             pickle.dump((X_te, id_list), file, pickle.HIGHEST_PROTOCOL)
         logging.info("Test data processed")
 

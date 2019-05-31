@@ -9,6 +9,9 @@ TAGS = ["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"]
 STOPWORDS = set(nltk.corpus.stopwords.words('english'))
 PUNCTUATIONS = set(list(string.punctuation) + ["``", "''"])
 
+TRAIN_DATA_PATH = "./save/processed_train.pkl"
+TEST_DATA_PATH = "./save/processed_test.pkl"
+
 
 def process_row(row):
     text: str = row["comment_text"]
