@@ -27,7 +27,15 @@ def load_test_data(test_file_path, test_label_file_path, is_df=True):
     return data_frame['id'].tolist(), data_frame['comment_text'].tolist(), data_frame.iloc[:, 1:].as_matrix()
 
 
+def load_test_data_feature_only(test_file_path, is_df=True):
+    data_frame = pd.read_csv(test_file_path)
+    if is_df:
+        return data_frame
+
+    # test_ids, test_texts, test_labels (6 columns)
+    return data_frame['id'].tolist(), data_frame['comment_text'].tolist()
+
+
 if __name__ == '__main__':
     tr_df, va_df = load_train_data("./resources/train.csv")
     print(tr_df.dtypes)
-

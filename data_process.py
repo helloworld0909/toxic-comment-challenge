@@ -11,19 +11,23 @@ PUNCTUATIONS = set(list(string.punctuation) + ["``", "''"])
 
 
 def process_row(row):
-    tokens = []
-    text: str = row["comment_text"].strip()
-    for sent in nltk.sent_tokenize(text):
-        for word in nltk.word_tokenize(sent):
-            if word in PUNCTUATIONS or word in STOPWORDS:
-                continue
-            tokens.append(word.lower())
-
+    text: str = row["comment_text"]
+    tokens = tokenize(text)
     label_one_hot = np.zeros(len(TAGS))
     for idx, tag in enumerate(TAGS):
         if row[tag] != 0:
             label_one_hot[idx] = 1
     return gensim.models.doc2vec.TaggedDocument(words=tokens, tags=label_one_hot)
+
+
+def tokenize(text):
+    tokens = []
+    for sent in nltk.sent_tokenize(text.strip()):
+        for word in nltk.word_tokenize(sent):
+            if word in PUNCTUATIONS or word in STOPWORDS:
+                continue
+            tokens.append(word.lower())
+    return tokens
 
 
 def load_train_data_with_dictionary(file_path):
@@ -76,6 +80,19 @@ def load_processed_train_data(file_path):
         y_va.append(doc.tags)
 
     return x_tr, y_tr, x_va, y_va, dictionary
+
+
+def load_processed_test_data_feature_only(file_path, dictionary):
+    test_df = data_loader.load_test_data_feature_only(file_path)
+    x_te, id_list = [], []
+
+    for idx, row in test_df.iterrows():
+        text = row["comment_text"]
+        tokens = tokenize(text)
+        x_te.append(list(map(lambda x: dictionary.get(x, 1), tokens)))
+        id_list.append(row["id"])
+
+    return x_te, id_list
 
 
 def seq2bow(seq):
