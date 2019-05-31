@@ -99,9 +99,9 @@ def seq2bow(seq):
     counter = collections.defaultdict(int)
     for token in seq:
         counter[token] += 1
-    return sorted(counter.items(), key=lambda x: x[1], reverse=True)
+    return list(counter.items())
 
 
 if __name__ == '__main__':
-    X_tr, Y_tr, X_va, Y_va = load_processed_train_data("./resources/train.csv")
+    X_tr, Y_tr, X_va, Y_va, dic = load_processed_train_data("./resources/train.csv")
     print(X_tr[:10])
