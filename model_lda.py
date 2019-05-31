@@ -1,11 +1,10 @@
 import data_process
+import util
 import logging
 import numpy as np
 import pickle
-import csv
 from gensim.models.ldamodel import LdaModel
 from sklearn.linear_model.logistic import LogisticRegression
-from sklearn.metrics import roc_auc_score
 
 MODEL_PATH = "./save/lda{}.model"
 TRAIN_DATA_PATH = "./save/processed_train.pkl"
@@ -35,28 +34,6 @@ def lda_topic_vectors(model: LdaModel, corpus):
         vector /= np.linalg.norm(vector)
         output.append(vector)
     return output
-
-
-def auc(Y, Y_pred):
-    auc_sum = 0
-    for label, y_pred in zip(Y, Y_pred):
-        y_hat = np.zeros(len(y_pred))
-        y_hat[label] = 1
-        auc_sum += roc_auc_score(y_hat, y_pred)
-    return auc_sum / len(Y)
-
-
-def submission(pred_list, id_list, output_path="submission.csv"):
-    with open(output_path, 'w', newline='') as output_file:
-        csv_writer = csv.writer(output_file)
-        csv_writer.writerow(["id"] + data_process.TAGS)
-
-        for idx in range(len(id_list)):
-            row = [id_list[idx]]
-            for j in range(len(data_process.TAGS)):
-                positive_prob = pred_list[j][idx][1]
-                row.append(positive_prob)
-            csv_writer.writerow(row)
 
 
 if __name__ == '__main__':
@@ -116,9 +93,9 @@ if __name__ == '__main__':
         lr = LogisticRegression()
         lr.fit(X_tr, Y_tr[:, i])
         Y_va_pred = lr.predict_proba(X_va)
-        print("tag{}, valid auc:".format(i), auc(Y_va[:, i], Y_va_pred))
+        print("tag{}, valid auc:".format(i), util.auc(Y_va[:, i], Y_va_pred))
 
         Y_te_pred = lr.predict_proba(X_te)
         Y_te_pred_list.append(Y_te_pred)
 
-    submission(Y_te_pred_list, id_list)
+    util.submission(Y_te_pred_list, id_list)
