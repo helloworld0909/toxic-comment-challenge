@@ -59,7 +59,7 @@ def load_raw_train_data(file_path):
         x_va.append(doc.words)
         y_va.append(doc.tags)
 
-    return x_tr, y_tr, x_va, y_va
+    return x_tr, y_tr, x_va, y_va, dictionary
 
 
 def load_processed_train_data(file_path):
@@ -75,7 +75,7 @@ def load_processed_train_data(file_path):
         x_va.append(list(map(lambda x: dictionary.get(x, 1), doc.words)))
         y_va.append(doc.tags)
 
-    return x_tr, y_tr, x_va, y_va
+    return x_tr, y_tr, x_va, y_va, dictionary
 
 
 def seq2bow(seq):
