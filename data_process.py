@@ -1,4 +1,5 @@
 import numpy as np
+import collections
 import string
 import nltk
 import gensim
@@ -45,6 +46,22 @@ def load_train_data_with_dictionary(file_path):
     return train_doc, valid_doc, dictionary
 
 
+def load_raw_train_data(file_path):
+    train_doc, valid_doc, dictionary = load_train_data_with_dictionary(file_path)
+
+    x_tr, y_tr = [], []
+    for doc in train_doc:
+        x_tr.append(doc.words)
+        y_tr.append(doc.tags)
+
+    x_va, y_va = [], []
+    for doc in valid_doc:
+        x_va.append(doc.words)
+        y_va.append(doc.tags)
+
+    return x_tr, y_tr, x_va, y_va
+
+
 def load_processed_train_data(file_path):
     train_doc, valid_doc, dictionary = load_train_data_with_dictionary(file_path)
 
@@ -59,6 +76,13 @@ def load_processed_train_data(file_path):
         y_va.append(doc.tags)
 
     return x_tr, y_tr, x_va, y_va
+
+
+def seq2bow(seq):
+    counter = collections.defaultdict(int)
+    for token in seq:
+        counter[token] += 1
+    return sorted(counter.items(), key=lambda x: x[1], reverse=True)
 
 
 if __name__ == '__main__':
