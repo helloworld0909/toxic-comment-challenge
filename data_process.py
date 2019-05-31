@@ -9,8 +9,8 @@ TAGS = ["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"]
 STOPWORDS = set(nltk.corpus.stopwords.words('english'))
 PUNCTUATIONS = set(list(string.punctuation) + ["``", "''"])
 
-TRAIN_DATA_PATH = "./save/processed_train.pkl"
-TEST_DATA_PATH = "./save/processed_test.pkl"
+TRAIN_DATA_PATH = "./save/processed_train_{}.pkl"
+TEST_DATA_PATH = "./save/processed_test_{}.pkl"
 
 
 def process_row(row):
@@ -107,6 +107,13 @@ def seq2bow(seq):
     for token in seq:
         counter[token] += 1
     return list(counter.items())
+
+
+def seq2onehot(seq, dictionary):
+    vector = np.zeros(len(dictionary))
+    for token in seq:
+        vector[token] = 1
+    return vector
 
 
 if __name__ == '__main__':

@@ -2,6 +2,8 @@ import csv
 import numpy as np
 from sklearn.metrics import roc_auc_score
 import data_process
+import pickle
+import logging
 
 
 def auc(Y, Y_pred):
@@ -24,3 +26,38 @@ def submission(pred_list, id_list, output_path="submission.csv"):
                 positive_prob = pred_list[j][idx][1]
                 row.append(positive_prob)
             csv_writer.writerow(row)
+
+
+def create_or_load_data(freq_threshold=0):
+    train_path = data_process.TRAIN_DATA_PATH.format(freq_threshold)
+    test_path = data_process.TEST_DATA_PATH.format(freq_threshold)
+    try:
+        with open(train_path, 'rb') as file:
+            X_tr, Y_tr, X_va, Y_va, dictionary = pickle.load(file)
+    except Exception as e:
+        logging.warning(e)
+        X_tr, Y_tr, X_va, Y_va, dictionary = data_process.load_processed_train_data("./resources/train.csv",
+                                                                                    freq_threshold=freq_threshold)
+        with open(train_path, 'wb') as file:
+            pickle.dump((X_tr, Y_tr, X_va, Y_va, dictionary), file, pickle.HIGHEST_PROTOCOL)
+        logging.info("Data processed")
+
+    logging.info("Data loaded")
+    logging.info("Dictionary size: {}".format(len(dictionary)))
+
+    try:
+        with open(test_path, 'rb') as file:
+            X_te, id_list = pickle.load(file)
+    except Exception as e:
+        logging.warning(e)
+        X_te, id_list = data_process.load_processed_test_data_feature_only("./resources/test.csv", dictionary)
+        with open(test_path, 'wb') as file:
+            pickle.dump((X_te, id_list), file, pickle.HIGHEST_PROTOCOL)
+        logging.info("Test data processed")
+
+    logging.info("Test data loaded")
+
+    Y_tr = np.asarray(Y_tr, dtype="int32")
+    Y_va = np.asarray(Y_va, dtype="int32")
+
+    return X_tr, Y_tr, X_va, Y_va, dictionary, X_te, id_list
