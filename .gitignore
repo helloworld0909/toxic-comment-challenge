@@ -159,3 +159,4 @@ venv.bak/
 /resources
 /.idea
 *.iml
+*.csv
