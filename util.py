@@ -28,6 +28,17 @@ def submission(pred_list, id_list, output_path="submission.csv"):
             csv_writer.writerow(row)
 
 
+def submission2(pred_list, id_list, output_path="submission.csv"):
+    with open(output_path, 'w', newline='') as output_file:
+        csv_writer = csv.writer(output_file)
+        csv_writer.writerow(["id"] + data_process.TAGS)
+
+        for idx in range(len(id_list)):
+            row = [id_list[idx]]
+            row.extend(pred_list[idx])
+            csv_writer.writerow(row)
+
+
 def create_or_load_data(freq_threshold=0):
     train_path = data_process.TRAIN_DATA_PATH.format(freq_threshold)
     test_path = data_process.TEST_DATA_PATH.format(freq_threshold)
