@@ -29,10 +29,8 @@ def build_model(word_embedding, params):
         name='word_embedding'
     )(word_input_masking)
 
-    bilstm = Bidirectional(LSTM(params['lstmOutDim'], return_sequences=True, dropout=0.0, recurrent_dropout=0.0), name='BiLSTM1')(
-        word_embedding)
     bilstm = Bidirectional(LSTM(params['lstmOutDim'], dropout=0.0, recurrent_dropout=0.0), name='BiLSTM2')(
-        bilstm)
+        word_embedding)
 
     hidden = Dense(100, activation="relu", name='hidden_layer1')(bilstm)
     hidden = Dense(30, activation="relu", name='hidden_layer2')(hidden)
@@ -60,7 +58,8 @@ if __name__ == '__main__':
     except OSError as e:
         logging.warning(e)
         dim = PARAMS['wordEmbeddingDim']
-        word2vector = util.load_word_embedding("./resources/glove.6B.{}d.txt".format(PARAMS['wordEmbeddingDim']), dim=dim)
+        word2vector = util.load_word_embedding("./resources/glove.6B.{}d.txt".format(PARAMS['wordEmbeddingDim']),
+                                               dim=dim)
         embedding_matrix = []
         for i in range(len(idx2token)):
             token = idx2token[i]
