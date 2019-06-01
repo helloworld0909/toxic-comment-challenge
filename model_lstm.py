@@ -29,8 +29,10 @@ def build_model(word_embedding, params):
         name='word_embedding'
     )(word_input_masking)
 
-    bilstm = Bidirectional(LSTM(params['lstmOutDim'], dropout=0.0, recurrent_dropout=0.0), name='BiLSTM')(
+    bilstm = Bidirectional(LSTM(params['lstmOutDim'], return_sequences=True, dropout=0.0, recurrent_dropout=0.0), name='BiLSTM1')(
         word_embedding)
+    bilstm = Bidirectional(LSTM(params['lstmOutDim'], dropout=0.0, recurrent_dropout=0.0), name='BiLSTM2')(
+        bilstm)
 
     hidden = Dense(100, activation="relu", name='hidden_layer1')(bilstm)
     hidden = Dense(30, activation="relu", name='hidden_layer2')(hidden)
@@ -38,7 +40,7 @@ def build_model(word_embedding, params):
     output = Dense(6, activation="sigmoid", name='output')(hidden)
 
     model = Model(inputs=word_input, outputs=output)
-    model.compile(optimizer='adam', loss="binary_crossentropy")
+    model.compile(optimizer='adam', loss="binary_crossentropy", metrics=["accuracy"])
     model.summary()
 
     return model
@@ -52,12 +54,13 @@ if __name__ == '__main__':
     X_va = pad_sequences(X_va, MAX_SENTENCE_LEN)
     X_te = pad_sequences(X_te, MAX_SENTENCE_LEN)
 
+    model_path = "./save/lstm_{}.model".format(PARAMS['wordEmbeddingDim'])
     try:
-        lstm = keras.models.load_model("./save/lstm.model")
+        lstm = keras.models.load_model(model_path)
     except OSError as e:
         logging.warning(e)
         dim = PARAMS['wordEmbeddingDim']
-        word2vector = util.load_word_embedding("./resources/glove.6B.100d.txt", dim=dim)
+        word2vector = util.load_word_embedding("./resources/glove.6B.{}d.txt".format(PARAMS['wordEmbeddingDim']), dim=dim)
         embedding_matrix = []
         for i in range(len(idx2token)):
             token = idx2token[i]
@@ -68,7 +71,7 @@ if __name__ == '__main__':
 
         lstm = build_model(embedding_matrix, PARAMS)
         lstm.fit(X_tr, Y_tr, epochs=5, batch_size=64, validation_data=[X_va, Y_va])
-        lstm.save("./save/lstm.model")
+        lstm.save(model_path)
 
     Y_te_pred_list = lstm.predict(X_te, verbose=1)
     util.submission2(Y_te_pred_list, id_list, output_path="submission2.csv")
