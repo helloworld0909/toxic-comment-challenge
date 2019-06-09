@@ -9,7 +9,7 @@ import util
 
 logging.basicConfig(level=logging.INFO)
 
-MAX_SENTENCE_LEN = 500
+MAX_SENTENCE_LEN = 200
 
 PARAMS = {
     'wordEmbeddingDim': 100,
