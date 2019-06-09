@@ -1,5 +1,6 @@
 import collections
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import data_loader
 import data_process
@@ -30,6 +31,23 @@ def label_distribution(df, name="train"):
     plt.xticks(ind, data_process.TAGS)
     plt.legend()
     plt.savefig("label_distribution_{}.png".format(name))
+    plt.close()
+
+
+def label_correlation(name="train"):
+    _, y_tr, _, y_va, _, _, _ = util.create_or_load_data(freq_threshold=0)
+
+    df = pd.DataFrame(data=y_tr, columns=data_process.TAGS)
+
+    corr = df.corr()
+    size = 10
+    fig, ax = plt.subplots(figsize=(size, size))
+    cax = ax.matshow(corr, cmap="Spectral_r")
+    plt.colorbar(cax)
+    plt.xticks(range(len(corr.columns)), corr.columns)
+    plt.yticks(range(len(corr.columns)), corr.columns)
+    plt.legend()
+    plt.savefig("label_correlation_{}.png".format(name))
     plt.close()
 
 
@@ -104,5 +122,7 @@ if __name__ == '__main__':
     label_distribution(valid_df, name="valid")
 
     sentence_length_distribution()
-    
+
     token_frequency_distribution()
+
+    label_correlation()
