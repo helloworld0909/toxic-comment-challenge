@@ -3,9 +3,10 @@ import matplotlib.pyplot as plt
 
 import data_loader
 import data_process
+import util
 
 
-def label_distribution(df):
+def label_distribution(df, name="train"):
     counter = {tag: collections.defaultdict(int) for tag in data_process.TAGS}
 
     for idx, row in df.iterrows():
@@ -28,28 +29,44 @@ def label_distribution(df):
     plt.ylabel("count")
     plt.xticks(ind, data_process.TAGS)
     plt.legend()
-    plt.show()
+    plt.savefig("label_distribution_{}.png".format(name))
+    plt.close()
 
 
 def sentence_length_distribution():
-    x_tr, _, x_va, _ = data_process.load_processed_train_data("./resources/train.csv")
-    counter_tr, counter_va = [collections.defaultdict(int)] * 2
-    for x in x_tr:
-        counter_tr[len(x)] += 1
-    for x in x_va:
-        counter_va[len(x)] += 1
+    x_tr, y_tr, x_va, y_va, dic, x_te, id_list = util.create_or_load_data(freq_threshold=0)
+    counter_tr, counter_va = [collections.defaultdict(lambda: collections.defaultdict(int))] * 2
+    for x, y in zip(x_tr, y_tr):
+        for i in range(len(y)):
+            counter_tr["{}_{}".format(i, y[i])][len(x)] += 1
 
-    plt.hist(counter_tr.values(), bins=100, label="train")
+    for x, y in zip(x_va, y_va):
+        for i in range(len(y)):
+            counter_va["{}_{}".format(i, y[i])][len(x)] += 1
+
+    lengths_tr = collections.defaultdict(list)
+    counts_tr = collections.defaultdict(list)
+    for k in counter_tr:
+
+        for length, c in sorted(counter_tr[k].items()):
+            lengths_tr[k].append(length)
+            counts_tr[k].append(c)
+
+    bins = range(0, 2000, 20)
+    plt.hist(lengths_tr["0_0"], bins=bins, weights=counts_tr["0_0"], label="non-toxic train")
+    plt.hist(lengths_tr["0_1"], bins=bins, weights=counts_tr["0_1"], label="toxic train")
     plt.title("sentence length distribution of train data")
     plt.ylabel("count")
     plt.xlabel("length")
+    plt.yscale("log")
     plt.legend()
-    plt.show()
+    plt.savefig("sentence_length_distribution_train.png")
+    plt.close()
 
 
 if __name__ == '__main__':
     train_df, valid_df = data_loader.load_train_data("./resources/train.csv")
 
-    label_distribution(train_df)
-    label_distribution(valid_df)
+    label_distribution(train_df, name="train")
+    label_distribution(valid_df, name="valid")
     sentence_length_distribution()
