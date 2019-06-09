@@ -26,7 +26,7 @@ if __name__ == '__main__':
         Y_va_pred = []
         j = 0
         while j < len(X_va):
-            end = min(j + batch_size, len(X_va) - 1)
+            end = min(j + batch_size, len(X_va))
             batch = [data_process.seq2onehot(seq, dictionary) for seq in X_va[j:end]]
             Y_va_pred.extend(nb.predict_proba(batch))
             j += batch_size
@@ -38,7 +38,7 @@ if __name__ == '__main__':
         Y_te_pred = []
         j = 0
         while j < len(X_te):
-            end = min(j + batch_size, len(X_te) - 1)
+            end = min(j + batch_size, len(X_te))
             batch = [data_process.seq2onehot(seq, dictionary) for seq in X_te[j:end]]
             Y_te_pred.extend(nb.predict_proba(batch))
             j += batch_size
