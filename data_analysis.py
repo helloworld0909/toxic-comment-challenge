@@ -65,9 +65,44 @@ def sentence_length_distribution():
     plt.close()
 
 
+def token_frequency_distribution(name="train"):
+    x_tr, _, _, _, _, _, _ = util.create_or_load_data(freq_threshold=0)
+
+    token_counter = collections.defaultdict(int)
+    for x in x_tr:
+        for token in x:
+            token_counter[token] += 1
+
+    freq_counter = collections.defaultdict(int)
+    total_count = 0
+    for c in token_counter.values():
+        freq_counter[c] += c
+        total_count += c
+
+    acc = 0
+    acc_freq = []
+    freq_list = []
+    for freq, c in sorted(freq_counter.items()):
+        if freq > 200:
+            break
+        freq_list.append(freq)
+        acc += c
+        acc_freq.append(acc / float(total_count))
+
+    plt.plot(freq_list, acc_freq, label=name)
+    plt.title("Token frequency distribution of train data")
+    plt.ylabel("cutoff proportion")
+    plt.xlabel("cutoff token frequency")
+    plt.legend()
+    plt.savefig("token_frequency_cutoff_f200_{}.png".format(name))
+    plt.close()
+
+
 if __name__ == '__main__':
     train_df, valid_df = data_loader.load_train_data("./resources/train.csv")
-
     label_distribution(train_df, name="train")
     label_distribution(valid_df, name="valid")
-    # sentence_length_distribution()
+
+    sentence_length_distribution()
+    
+    token_frequency_distribution()
