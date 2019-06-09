@@ -25,7 +25,7 @@ def label_distribution(df, name="train"):
     ind = range(len(data_process.TAGS))
     plt.bar(ind, negative, 0.35, label="negative")
     plt.bar(ind, positive, 0.35, label="positive", bottom=negative)
-    plt.title("label distribution")
+    plt.title("label distribution {}".format(name))
     plt.ylabel("count")
     plt.xticks(ind, data_process.TAGS)
     plt.legend()
@@ -34,7 +34,8 @@ def label_distribution(df, name="train"):
 
 
 def sentence_length_distribution():
-    x_tr, y_tr, x_va, y_va, dic, x_te, id_list = util.create_or_load_data(freq_threshold=0)
+    freq = 10
+    x_tr, y_tr, x_va, y_va, dic, x_te, id_list = util.create_or_load_data(freq_threshold=freq)
     counter_tr, counter_va = [collections.defaultdict(lambda: collections.defaultdict(int))] * 2
     for x, y in zip(x_tr, y_tr):
         for i in range(len(y)):
@@ -60,7 +61,7 @@ def sentence_length_distribution():
     plt.xlabel("length")
     plt.yscale("log")
     plt.legend()
-    plt.savefig("sentence_length_distribution_train.png")
+    plt.savefig("sentence_length_distribution_{}_train.png".format(freq))
     plt.close()
 
 
@@ -69,4 +70,4 @@ if __name__ == '__main__':
 
     label_distribution(train_df, name="train")
     label_distribution(valid_df, name="valid")
-    sentence_length_distribution()
+    # sentence_length_distribution()

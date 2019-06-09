@@ -9,7 +9,7 @@ import util
 
 logging.basicConfig(level=logging.INFO)
 
-MAX_SENTENCE_LEN = 200
+MAX_SENTENCE_LEN = 500
 
 PARAMS = {
     'wordEmbeddingDim': 100,
@@ -29,7 +29,7 @@ def build_model(word_embedding, params):
         name='word_embedding'
     )(word_input_masking)
 
-    bilstm = Bidirectional(LSTM(params['lstmOutDim'], dropout=0.0, recurrent_dropout=0.0), name='BiLSTM2')(
+    bilstm = Bidirectional(LSTM(params['lstmOutDim'], dropout=0.0, recurrent_dropout=0.0), name='BiLSTM')(
         word_embedding)
 
     hidden = Dense(100, activation="relu", name='hidden_layer1')(bilstm)
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     X_va = pad_sequences(X_va, MAX_SENTENCE_LEN)
     X_te = pad_sequences(X_te, MAX_SENTENCE_LEN)
 
-    model_path = "./save/lstm_{}.model".format(PARAMS['wordEmbeddingDim'])
+    model_path = "./save/lstm_{}_{}.model".format(PARAMS['wordEmbeddingDim'], MAX_SENTENCE_LEN)
     try:
         lstm = keras.models.load_model(model_path)
     except OSError as e:
