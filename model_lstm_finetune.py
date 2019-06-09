@@ -1,5 +1,6 @@
 import keras
 from keras.preprocessing.sequence import pad_sequences
+from keras.optimizers import Adam
 
 import logging
 import util
@@ -19,7 +20,7 @@ if __name__ == '__main__':
 
     lstm = keras.models.load_model(model_path)
     lstm.get_layer("word_embedding").trainable = True
-    lstm.compile(optimizer='adam', loss="binary_crossentropy", metrics=["accuracy"])
+    lstm.compile(optimizer=Adam(lr=0.00001), loss="binary_crossentropy", metrics=["accuracy"])
     lstm.summary()
 
     lstm.fit(X_tr, Y_tr, epochs=2, batch_size=64, validation_data=[X_va, Y_va])
