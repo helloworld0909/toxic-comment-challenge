@@ -3,8 +3,8 @@ import util
 import logging
 import numpy as np
 from gensim.models.ldamodel import LdaModel
-from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
+from xgboost import XGBClassifier
 
 MODEL_PATH = "./save/lda{}.model"
 
@@ -69,13 +69,13 @@ if __name__ == '__main__':
 
     Y_te_pred_list = []
     for i in range(Y_tr.shape[1]):
-        svm = SVC(kernel="rbf", probability=True, verbose=True, cache_size=1024, tol=1e-2)
+        classifier = XGBClassifier(max_depth=5, verbosity=2)
 
-        svm.fit(X_tr, Y_tr[:, i])
-        Y_va_pred = svm.predict_proba(X_va)
+        classifier.fit(X_tr, Y_tr[:, i])
+        Y_va_pred = classifier.predict_proba(X_va)
         print("tag{}, valid auc:".format(i), util.auc(Y_va[:, i], Y_va_pred))
 
-        Y_te_pred = svm.predict_proba(X_te)
+        Y_te_pred = classifier.predict_proba(X_te)
         Y_te_pred_list.append(Y_te_pred)
 
-    util.submission(Y_te_pred_list, id_list, output_path="submission_svm.csv")
+    util.submission(Y_te_pred_list, id_list, output_path="submission_xgb.csv")
