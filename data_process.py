@@ -114,6 +114,13 @@ def seq2onehot(seq, dictionary):
     return vector
 
 
+def seq2counts(seq, dictionary):
+    vector = np.zeros(len(dictionary))
+    for token in seq:
+        vector[token] += 1
+    return vector
+
+
 if __name__ == '__main__':
     X_tr, Y_tr, X_va, Y_va, dic = load_processed_train_data("./resources/train.csv")
     print(X_tr[:10])
