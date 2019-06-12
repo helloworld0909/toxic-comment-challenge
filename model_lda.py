@@ -2,12 +2,11 @@ import data_process
 import util
 import logging
 import numpy as np
-import pickle
 from gensim.models.ldamodel import LdaModel
-from sklearn.linear_model.logistic import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.preprocessing import StandardScaler
 
 MODEL_PATH = "./save/lda{}.model"
-
 
 logging.basicConfig(level=logging.INFO)
 
@@ -20,8 +19,7 @@ def lda_input_transform(seqs: list):
 def print_topic_terms(model: LdaModel):
     for topic_id in range(model.num_topics):
         top_list = model.get_topic_terms(topic_id)
-        for idx, value in top_list:
-            print(topic_id, idx2token[idx], value)
+        print(topic_id, [idx2token[idx] for idx, value in top_list])
 
 
 def lda_topic_vectors(model: LdaModel, corpus):
@@ -36,31 +34,7 @@ def lda_topic_vectors(model: LdaModel, corpus):
 
 
 if __name__ == '__main__':
-    try:
-        with open(data_process.TRAIN_DATA_PATH, 'rb') as file:
-            X_tr, Y_tr, X_va, Y_va, dictionary = pickle.load(file)
-    except Exception as e:
-        logging.warning(e)
-        X_tr, Y_tr, X_va, Y_va, dictionary = data_process.load_processed_train_data("./resources/train.csv",
-                                                                                    freq_threshold=10)
-        with open(data_process.TRAIN_DATA_PATH, 'wb') as file:
-            pickle.dump((X_tr, Y_tr, X_va, Y_va, dictionary), file, pickle.HIGHEST_PROTOCOL)
-        logging.info("Data processed")
-
-    logging.info("Data loaded")
-    logging.info("Dictionary size: {}".format(len(dictionary)))
-
-    try:
-        with open(data_process.TEST_DATA_PATH, 'rb') as file:
-            X_te, id_list = pickle.load(file)
-    except Exception as e:
-        logging.warning(e)
-        X_te, id_list = data_process.load_processed_test_data_feature_only("./resources/test.csv", dictionary)
-        with open(data_process.TEST_DATA_PATH, 'wb') as file:
-            pickle.dump((X_te, id_list), file, pickle.HIGHEST_PROTOCOL)
-        logging.info("Test data processed")
-
-    logging.info("Test data loaded")
+    X_tr, Y_tr, X_va, Y_va, dictionary, X_te, id_list = util.create_or_load_data(freq_threshold=10)
 
     idx2token = {v: k for k, v in dictionary.items()}
 
@@ -79,22 +53,29 @@ if __name__ == '__main__':
 
     logging.info("Model loaded")
 
+    print_topic_terms(model=lda)
+
     X_tr = lda_topic_vectors(lda, corpus_tr)
-    Y_tr = np.asarray(Y_tr, dtype="int32")
-
     X_va = lda_topic_vectors(lda, corpus_va)
-    Y_va = np.asarray(Y_va, dtype="int32")
-
     X_te = lda_topic_vectors(lda, corpus_te)
+
+    scaler = StandardScaler()
+    scaler.fit(X_tr)
+    X_tr = scaler.transform(X_tr)
+    X_va = scaler.transform(X_va)
+    X_te = scaler.transform(X_te)
+
+    logging.info("LDA vectors loaded")
 
     Y_te_pred_list = []
     for i in range(Y_tr.shape[1]):
-        lr = LogisticRegression()
-        lr.fit(X_tr, Y_tr[:, i])
-        Y_va_pred = lr.predict_proba(X_va)
+        svm = SVC(kernel="rbf", probability=True, verbose=True, cache_size=1024, tol=1e-2)
+
+        svm.fit(X_tr, Y_tr[:, i])
+        Y_va_pred = svm.predict_proba(X_va)
         print("tag{}, valid auc:".format(i), util.auc(Y_va[:, i], Y_va_pred))
 
-        Y_te_pred = lr.predict_proba(X_te)
+        Y_te_pred = svm.predict_proba(X_te)
         Y_te_pred_list.append(Y_te_pred)
 
-    util.submission(Y_te_pred_list, id_list)
+    util.submission(Y_te_pred_list, id_list, output_path="submission_svm.csv")
